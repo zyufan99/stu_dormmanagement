@@ -1,3 +1,25 @@
+# coding: utf8
+import random
+import json
+import os
+
+
+card_list = []
+
+room_map = {
+    'm': ['100', '101', '102'],
+    'f': ['200', '201', '202']
+}
+
+
+def read():
+    """读取文件"""
+    global card_list
+    if os.path.exists('./students.json'):
+        with open("./students.json", 'r', encoding="utf8") as f:
+            card_list = json.load(f)
+
+
 def show_menu():
     print('*' * 50)
     print('欢迎使用【宿舍管理系统】')
@@ -11,7 +33,35 @@ def show_menu():
     print('*' * 50)
 
 
-card_list = []
+def input_room_info(sex='m'):
+    """
+    学生信息输入
+    """
+    choose = input("宿舍号:手动输入按'1'，自动分配按回车:")
+    if choose in ['1']:
+        d = input('请选择（100-102）:')
+        room = d if d in room_map[sex] else None
+    else:
+        room = random.choice(room_map[sex])
+        print("自动选择的房间号为：", room)
+    room_str = input('请确认宿舍号：')
+    if room_str == room:
+        if room_status(room):
+            print("房间{}已满".format(room))
+            return
+    else:
+        print("抱歉，两次输入房间号不一致，请重新确认！")
+        return
+    print("欢迎入住{}宿舍!宿舍号:".format("男生" if sex == 'm' else '女生'), room)
+    return room
+
+
+def room_status(room_num):
+    """
+    房间是否已满监测
+    """
+    if len([peo for peo in filter(lambda item: item["room_str"] == room_num, card_list)]) == 4:
+        return True
 
 
 def new_card():
@@ -27,45 +77,23 @@ def new_card():
         if s["ID_str"] == ID_str:
             print("已存在!")
             return
-    import random
-    room = None
+
     while True:
         sex_str = input("请输入性别(m/f)：")
-        if sex_str == "m":
-            choose = input("宿舍号:手动输入按'1'，自动分配按回车:")
-            if choose in ['1']:
-                if choose == '1':
-                    d = input('请选择（100-102）:')
-                    if d in ['100', '101', '102']:
-                        room = d
-            else:
-                room = random.randint(100, 102)
-            print("欢迎入住男生宿舍!宿舍号:", room)
-            break
-        elif sex_str == "f":
-            choose = input("宿舍号选择:手动输入按'1'，自动分配按回车:")
-            if choose in ['1']:
-                if choose == '1':
-                    d = input('请选择（200-202）:')
-                    if d in ['200', '201', '202']:
-                        room = d
-            else:
-                room = random.randint(200, 202)
-            print("欢迎入住女生宿舍!宿舍号:", room)
+        room_info = input_room_info(sex_str)
+        if room_info:
+            # 使用用户输入建字典
+            card_dict = {
+                'name_str': name_str,
+                'sex_str': sex_str,
+                'ID_str': ID_str,
+                'room_str': room_info
+            }
             break
         else:
-            print("请输入正确格式")
-    room_str = input('请确认宿舍号：')
-
-    # 使用用户输入建字典
-    card_dict = {'name_str': name_str,
-                 'sex_str': sex_str,
-                 'ID_str': ID_str,
-                 'room_str': room_str}
-
+            print("房间号输入有误")
     # 将名片字典添加到列表中
     card_list.append(card_dict)  # 把一个字典追加到一个列表中
-    # print(card_list)
 
     # 提示用户添加成功
     print('添加 %s 的信息成功' % name_str)
@@ -237,3 +265,9 @@ def input_card_info(dict_value, tip_message):
     else:
         # dict_value:字典中原有的值
         return dict_value
+
+
+def save():
+    """保存数据"""
+    with open("./students.json", 'w', encoding="utf8") as f:
+        json.dump(card_list, f)

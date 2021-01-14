@@ -1,8 +1,10 @@
-from student_management import sys_module  # 调用工具函数
+# from student_management import sys_module  # 调用工具函数
+import sys_module
 # 无限循环，由用户主动决定什么时候退出
 while True:
 
     sys_module.show_menu()
+    sys_module.read()
 
     action_str = input("请选择希望执行的操作: ")
     print("你选择的操作是 %s" % action_str)
@@ -18,7 +20,7 @@ while True:
     # 0退出系统
     elif action_str == "0":
         print("欢迎再次使用【宿舍管理系统】")
-
+        sys_module.save()
         break
 
     else:
